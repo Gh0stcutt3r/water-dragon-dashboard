@@ -1,0 +1,26 @@
+# Tracker config — v0.4 Part 2
+chain: robinhood
+db_path: ~/workspace/goals/launch-economics-data-tool/build/tracker.db
+
+# Seed set: $20-experiment watchlist + free-mint community case studies.
+# Slugs are Hood Market collection slugs; contract addresses filled on first scrape.
+seed_collections:
+  - { slug: null, name: "Wolves of the Wallstreet", launch_type: unknown, category_tags: "pfp" }
+  - { slug: null, name: "Chibi Hood", launch_type: unknown, category_tags: "pfp" }
+  - { slug: null, name: "SLUMS in the HOOD", launch_type: unknown, category_tags: "pfp" }
+  - { slug: null, name: "MonkeyHood", launch_type: unknown, category_tags: "pfp" }
+  - { slug: null, name: "Robinhood Punks", launch_type: unknown, category_tags: "pfp" }
+  - { slug: null, name: "Conspiracy Narrative", launch_type: unknown, category_tags: "art" }
+  - { slug: null, name: "CCFF00", launch_type: paid_mint, category_tags: "generative" }
+  - { slug: null, name: "Sloppies", launch_type: free_mint, category_tags: "pfp" }
+  - { slug: null, name: "City of Stonks", launch_type: free_mint, category_tags: "membership" }
+
+# Detection thresholds (v0.4 defaults — open review items)
+ape_window_days: 7          # buy within N days of first sale = "ape"
+sweep_min_sales: 5          # >=N sales to one buyer in a window = sweep
+sweep_window_hours: 6
+dump_min_tokens: 3          # >=N tokens sold by one wallet in 24h = dump check
+dump_window_hours: 24
+wash_confidence: 0.6        # below this, flag only
+spike_multiplier: 3.0       # 24h sales >= N * trailing-7d avg = volume spike
+min_cohort_size: 10

@@ -1,0 +1,17 @@
+# Databases: rebuilt by the pipeline, never committed.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Per-run state: refresh timestamps, rankings, seen-lists.
+hidden_files/
+
+# Python caches.
+__pycache__/
+*.pyc
+
+# Local secrets. Never commit API keys.
+.env
+*.key
+.opensea_key
