@@ -38,7 +38,10 @@ WINDOWS = {
 # User-pinned slugs, appended to every window after the API ranking. These stay
 # tracked even when outside the top 30 by volume.
 # 2026-10-12: abstract-workers (friend's launch, 1,111 supply, Robinhood Chain).
-PINNED = ["abstract-workers"]
+# 2026-10-21: project migrated to a new contract (0x8ce30305E7F41792637119e6b120A27902D15296);
+# new OpenSea slug abstract-workers2, old slug renamed "(OLD COLLECTION)" and the
+# bare abstract-workers slug 404s, so the pin follows the new contract.
+PINNED = ["abstract-workers2"]
 
 
 def api_get(path, params):
