@@ -57,6 +57,11 @@ tr:hover td{background:#141d33}
 .b-wash{background:#facc1533;color:#fde68a}.b-spike{background:#ccff0033;color:#e4ff8a}
 .b-trojan{background:#fb923c33;color:#fdba74}
 .note{color:#8b98ad;font-size:12px;line-height:1.5}.mono{font-family:ui-monospace,monospace;font-size:12px}
+.copy-btn{background:none;border:1px solid #26334d;color:#8b98ad;border-radius:6px;
+cursor:pointer;font-size:11px;padding:1px 7px;margin-left:6px}
+.copy-btn:hover{border-color:#8b5cf6;color:#fff}
+.addr-link{color:#c6d2e4;text-decoration:none}
+.addr-link:hover{color:#fff;text-decoration:underline}
 svg text{fill:#8b98ad;font-size:10px}
 .grad-text{background:linear-gradient(90deg,#8b5cf6,#d946ef,#fb923c);
 -webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
@@ -72,6 +77,14 @@ const rows=[...tb.rows],num=th.dataset.num==='1';const asc=th.dataset.asc!=='1';
 rows.sort((a,b)=>{let x=a.cells[ci].textContent.trim(),y=b.cells[ci].textContent.trim();
 if(num){x=parseFloat(x)||0;y=parseFloat(y)||0}return asc?(x>y?1:-1):(x<y?1:-1)});
 rows.forEach(r=>tb.appendChild(r));}
+function copyAddr(btn){const a=btn.dataset.addr;
+const done=()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='⧉',1200);};
+if(navigator.clipboard&&navigator.clipboard.writeText){
+navigator.clipboard.writeText(a).then(done).catch(()=>fallbackCopy(a,done));}
+else{fallbackCopy(a,done);}}
+function fallbackCopy(a,done){const t=document.createElement('textarea');t.value=a;
+t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();
+try{document.execCommand('copy');done();}catch(e){}document.body.removeChild(t);}
 function tierOf(s){if(!s||s<=0)return "unknown";if(s<1000)return "sub-1k";
 if(s<2000)return "1k-2k";if(s<3000)return "2k-3k";if(s<5000)return "3k-5k";
 if(s<10000)return "5k-10k";return "10k+";}
@@ -82,18 +95,29 @@ if(!v||v<=0){el.innerHTML="<p class='note'>Enter a supply size first.</p>";retur
 if(!d||!d.n){el.innerHTML="<p class='note'>No collections in the "+t+" tier yet.</p>";return;}
 const deadPct=Math.round(d.dead/d.n*100);
 let verdict;
-if(d.med7===null||d.med7===undefined){verdict="Not enough floor history yet to call this tier.";}
+if(d.med7===null||d.med7===undefined){verdict="Not enough floor history yet to call the trend. "+
+(d.med_now!==null&&d.med_now!==undefined?
+"Today the tier's median floor is "+d.med_now+" ETH across "+d.n_now+" collections with live floors — that's the level your launch would be born into.":
+"No live ETH floors in this tier right now, so there's no level to read either.");}
 else if(deadPct>=50){verdict="Most of this tier is dead (no live floor). High-risk tier.";}
 else if(d.med7>=5){verdict="Strong tier: floors climbing on balance.";}
 else if(d.med7<=-5){verdict="Soft tier: floors sliding on balance. Launch here needs a reason to be different.";}
 else{verdict="Flat tier: floors holding roughly level.";}
 const f=(x)=>x===null||x===undefined?"n/a":(x>0?"+":"")+x+"%";
+const eth=(x)=>x===null||x===undefined?"n/a":x+" ETH";
+const need7=d.hist_days!==undefined?Math.max(0,7-d.hist_days):null;
+const need30=d.hist_days!==undefined?Math.max(0,30-d.hist_days):null;
+const lbl7="Median floor, 7d"+(need7>0?" (unlocks in "+need7+"d)":"");
+const lbl30="Median floor, 30d"+(need30>0?" (unlocks in "+need30+"d)":"");
 const ex=(e)=>e?e.name+" ("+(e.chg>0?"+":"")+e.chg+"%)":"n/a";
+const range=(d.min_now!==null&&d.min_now!==undefined)?d.min_now+" – "+d.max_now+" ETH":"n/a";
 el.innerHTML="<table><tbody>"+
 "<tr><td>Tier</td><td><b>"+t+"</b> ("+v.toLocaleString()+" supply)</td></tr>"+
 "<tr><td>Collections tracked</td><td>"+d.n+" ("+d.dead+" with no live floor)</td></tr>"+
-"<tr><td>Median floor, 7d</td><td>"+f(d.med7)+"</td></tr>"+
-"<tr><td>Median floor, 30d</td><td>"+f(d.med30)+"</td></tr>"+
+"<tr><td>Median floor today</td><td>"+eth(d.med_now)+"</td></tr>"+
+"<tr><td>Floor range today</td><td>"+range+"</td></tr>"+
+"<tr><td>"+lbl7+"</td><td>"+f(d.med7)+"</td></tr>"+
+"<tr><td>"+lbl30+"</td><td>"+f(d.med30)+"</td></tr>"+
 "<tr><td>Best 7d mover</td><td>"+ex(d.best7)+"</td></tr>"+
 "<tr><td>Worst 7d mover</td><td>"+ex(d.worst7)+"</td></tr>"+
 "</tbody></table><p class='note' style='margin-top:10px'><b>Dragon's read:</b> "+verdict+"</p>";}
@@ -187,6 +211,44 @@ def arrow(new, old):
     return '<span class="flat">■ FLAT</span>'
 
 
+def _parse_ts(ts):
+    try:
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except Exception:
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def tape_depth_days(con, cid, slug):
+    """Days of history we hold for a collection: first observed sale, else
+    first snapshot, else row creation. None if nothing found. This is tape
+    depth (how long we've watched), not the project's true age."""
+    now = datetime.now(timezone.utc)
+    dt = None
+    r = con.execute("SELECT MIN(timestamp) t FROM sales WHERE collection_id=?",
+                    (cid,)).fetchone()
+    if r and r["t"]:
+        dt = _parse_ts(r["t"])
+    if dt is None:
+        try:
+            econ = sqlite3.connect(os.path.join(BUILD, "econ.db"))
+            s = econ.execute("SELECT MIN(ts) t FROM snapshots WHERE slug=?",
+                             (slug,)).fetchone()
+            econ.close()
+            if s and s["t"]:
+                dt = _parse_ts(s["t"])
+        except Exception:
+            dt = None
+    if dt is None:
+        r2 = con.execute("SELECT added_at FROM collections WHERE id=?",
+                         (cid,)).fetchone()
+        if r2 and r2["added_at"]:
+            dt = _parse_ts(r2["added_at"])
+    if dt is None:
+        return None
+    return max(0, (now - dt).days)
+
+
 def view_regime(con):
     daily = defaultdict(lambda: [0, 0.0])
     for r in con.execute("SELECT date(timestamp) d, price_eth FROM sales"):
@@ -204,7 +266,7 @@ def view_regime(con):
     rows = ""
     for r in con.execute("SELECT id, slug, name FROM collections"):
         sales = con.execute(
-            "SELECT price_eth FROM sales WHERE collection_id=? AND price_eth IS NOT NULL ORDER BY timestamp",
+            "SELECT price_eth, timestamp FROM sales WHERE collection_id=? AND price_eth IS NOT NULL ORDER BY timestamp",
             (r["id"],),
         ).fetchall()
         if len(sales) < 10:
@@ -215,10 +277,13 @@ def view_regime(con):
         q = len(sales) // 4
         old = sorted(s["price_eth"] for s in sales[:q])[q // 2]
         new = sorted(s["price_eth"] for s in sales[-q:])[q // 2]
+        t0, t1 = _parse_ts(sales[0]["timestamp"]), _parse_ts(sales[-1]["timestamp"])
+        span = (t1 - t0).days if t0 and t1 else 0
         rows += (
             f"<tr><td>{r['name']}</td><td>{arrow(new, old)}</td>"
             f"<td data-num='1'>{old:.5f}</td><td data-num='1'>{new:.5f}</td>"
-            f"<td data-num='1'>{len(sales)}</td><td data-num='1'>{vol_eth:.2f}</td></tr>"
+            f"<td data-num='1'>{len(sales)}</td><td data-num='1'>{span}</td>"
+            f"<td data-num='1'>{vol_eth:.2f}</td></tr>"
         )
     return f"""
 <div class="card"><h2>Market regime — last 30 days</h2>
@@ -229,9 +294,12 @@ def view_regime(con):
 </div>
 <div class="card"><h2>Price direction by collection</h2>
 <p class="note">Newest-quartile median vs oldest-quartile median. Minimum 10 sales and
-0.1 ETH total volume, so dust doesn't masquerade as activity. Click headers to sort.</p>
+0.1 ETH total volume, so dust doesn't masquerade as activity. Span = days between
+first and last sale in the trend; a short span means a young tape, not a verdict.
+Click headers to sort.</p>
 <table><thead><tr><th>Collection</th><th>Trend</th><th data-num="1">Old med</th>
-<th data-num="1">New med</th><th data-num="1">Sales</th><th data-num="1">Vol (ETH)</th></tr></thead>
+<th data-num="1">New med</th><th data-num="1">Sales</th><th data-num="1">Span (d)</th>
+<th data-num="1">Vol (ETH)</th></tr></thead>
 <tbody>{rows}</tbody></table></div>
 """
 
@@ -294,11 +362,12 @@ def _is_dead_7d(slug):
 
 def dragon_section(con, top7):
     """Claimed by Dragonfire: tracked collections with zero tape sales in the
-    trailing 7 days, excluding the current top 30. The sales tape is the most
-    direct measure of 'no volume'."""
+    trailing 7 days, excluding the current top 30. Split by tape depth so a
+    collection added 2 days ago isn't presented as dead — only 7d+ of history
+    earns the claim. The sales tape is the most direct measure of 'no volume'."""
     top7set = set(top7)
-    claimed = []
-    for r in con.execute("SELECT slug, name FROM collections"):
+    quiet, new = [], []
+    for r in con.execute("SELECT id, slug, name FROM collections"):
         slug = r["slug"]
         if slug in top7set:
             continue
@@ -307,19 +376,33 @@ def dragon_section(con, top7):
             "WHERE c.slug=? AND s.timestamp >= datetime('now', '-7 days')",
             (slug,)).fetchone()["c"]
         if n == 0:
-            claimed.append((r["name"], slug))
-    if not claimed:
+            depth = tape_depth_days(con, r["id"], slug)
+            if depth is not None and depth >= 7:
+                quiet.append((r["name"], slug, depth))
+            else:
+                new.append((r["name"], slug, depth))
+    if not quiet and not new:
         return ""
-    rows = "".join(
+    qrows = "".join(
         f"<tr><td>{n}</td><td class='mono'>{s}</td>"
-        f"<td>no sales in 7d</td></tr>" for n, s in sorted(claimed))
+        f"<td>no sales in 7d · tracked {d}d</td></tr>" for n, s, d in sorted(quiet))
+    nrows = "".join(
+        f"<tr><td>{n}</td><td class='mono'>{s}</td>"
+        f"<td>tape accruing{f' · tracked {d}d' if d is not None else ''}</td></tr>"
+        for n, s, d in sorted(new))
+    quiet_tbl = (f"<h3>Quiet — 7d+ of tape, no sales</h3><table><thead><tr><th>Collection</th>"
+                 f"<th>Slug</th><th>Status</th></tr></thead><tbody>{qrows}</tbody></table>"
+                 if qrows else "")
+    new_tbl = (f"<h3>New to the tracker — tape still accruing</h3><table><thead><tr><th>Collection</th>"
+               f"<th>Slug</th><th>Status</th></tr></thead><tbody>{nrows}</tbody></table>"
+               if nrows else "")
     return f"""
 <div class="card" style="margin-top:24px;border-color:#7f1d1d">
 <h2><span class="grad-text">Claimed by Dragonfire</span></h2>
-<p class="note">Zero sales on our tape in the trailing 7 days. Data retained for base rates,
-off the main board.</p>
-<table><thead><tr><th>Collection</th><th>Slug</th><th>Status</th></tr></thead>
-<tbody>{rows}</tbody></table></div>"""
+<p class="note">Zero sales on our tape in the trailing 7 days. Quiet means we've watched
+long enough to call it; new means the tape is still filling in. Data retained for base
+rates, off the main board.</p>
+{quiet_tbl}{new_tbl}</div>"""
 
 
 def view_collections(con):
@@ -388,9 +471,11 @@ def view_collections(con):
         rank_badge = f" <span class='badge b-spike rank-badge'>#{rank}</span>" if rank else ""
         mp = r["mint_price_eth"]
         mint_str = "Free" if mp == 0 else (f"{mp:.4f} ETH" if mp is not None else "mint n/a")
+        depth = tape_depth_days(con, cid, slug)
+        depth_str = f" · tracked {depth}d" if depth is not None else ""
         return f"""
 <div class="card collection-card" data-slug="{slug}">
-<h2>{r['name']}{rank_badge} <span class="note">{r['chain']} · {n} sales · mint {mint_str}</span></h2>
+<h2>{r['name']}{rank_badge} <span class="note">{r['chain']} · {n} sales{depth_str} · mint {mint_str}</span></h2>
 <h3>Daily median sale (ETH)</h3>
 {svg_line([(d, v) for d, v in series]) if len(series) >= 2 else '<p class="note">no tape yet</p>'}
 <h3>Recent events</h3>
@@ -429,7 +514,10 @@ def view_wallets(con):
         pnl_cls = "up" if (r["realized_pnl_eth"] or 0) > 0 else (
             "down" if (r["realized_pnl_eth"] or 0) < 0 else "flat")
         rows += (
-            f"<tr><td class='mono'>{w[:10]}…{w[-4:]}</td>"
+            f"<tr><td class='mono'><a class='addr-link' href='https://opensea.io/{w}' "
+            f"target='_blank' title='{w}'>{w[:10]}…{w[-4:]}</a>"
+            f"<button class='copy-btn' data-addr='{w}' onclick='copyAddr(this)' "
+            f"title='Copy full address'>⧉</button></td>"
             f"<td data-num='1'>{r['dives']}</td><td data-num='1'>{r['dive_wins']}</td>"
             f"<td>{wr}</td>"
             f"<td data-num='1' class='{pnl_cls}'>{r['realized_pnl_eth']:.4f}</td>"
@@ -439,7 +527,8 @@ def view_wallets(con):
 <div class="card"><h2>Wallet leaderboard</h2>
 <p class="note">Dive = buy within 7 days of first observed sale. Win = later sold same
 collection above avg buy. Wallet ≠ person — sybil/bot noise is real; treat scores as
-signals, not identities. Click headers to sort.</p>
+signals, not identities. Click an address to open it on OpenSea, or ⧉ to copy the full
+address. Click headers to sort.</p>
 <table><thead><tr><th>Wallet</th><th data-num="1">Dives</th><th data-num="1">Wins</th>
 <th>Dive rate</th><th data-num="1">Realized PnL (ETH)</th><th data-num="1">Dumps</th></tr></thead>
 <tbody>{rows}</tbody></table></div>
@@ -646,6 +735,12 @@ def tier_brief():
     if not latest:
         econ.close()
         return {}
+    first_ts = econ.execute("SELECT MIN(ts) FROM snapshots").fetchone()[0]
+    try:
+        hist_days = (datetime.fromisoformat(latest.replace("Z", "+00:00")) -
+                     datetime.fromisoformat(first_ts.replace("Z", "+00:00"))).days
+    except Exception:
+        hist_days = 0
     cols = {}
     for r in econ.execute(
             "SELECT slug, name, tier, total_supply, floor, floor_sym FROM snapshots WHERE ts=?",
@@ -656,6 +751,10 @@ def tier_brief():
         s = sorted(v for _, v in pairs)
         return round(s[len(s) // 2], 1) if s else None
 
+    def med_raw(vals):
+        s = sorted(vals)
+        return round(s[len(s) // 2], 5) if s else None
+
     out = {}
     for t in ["sub-1k", "1k-2k", "2k-3k", "3k-5k", "5k-10k", "10k+"]:
         members = [c for c in cols.values() if c["tier"] == t]
@@ -664,6 +763,8 @@ def tier_brief():
             out[t] = {"n": 0}
             continue
         dead = sum(1 for c in members if not c["floor"])
+        eth_now = [c["floor"] for c in members
+                   if c["floor"] and (c["floor_sym"] or "ETH") == "ETH"]
         ch7, ch30 = [], []
         for c in members:
             if not c["floor"] or (c["floor_sym"] or "ETH") != "ETH":
@@ -685,6 +786,11 @@ def tier_brief():
             "n": n,
             "dead": dead,
             "n_eth": len(ch7),
+            "hist_days": hist_days,
+            "n_now": len(eth_now),
+            "med_now": med_raw(eth_now),
+            "min_now": round(min(eth_now), 5) if eth_now else None,
+            "max_now": round(max(eth_now), 5) if eth_now else None,
             "med7": med(ch7),
             "med30": med(ch30),
             "best7": {"name": ch7s[-1][0], "chg": round(ch7s[-1][1], 1)} if ch7s else None,
@@ -709,8 +815,10 @@ has actually performed: median floor movement, share with no live floor, best an
 <div id="launch-result"><p class="note">Results appear here.</p></div></div>
 <div class="card"><h2>How to read this</h2>
 <p class="note" style="font-size:13px">Tiers mirror the v0.4 spec: sub-1k, 1k-2k, 2k-3k, 3k-5k, 5k-10k, 10k+.
-Floor changes are ETH-denominated collections only. A collection with no live floor counts as dead for this read.
-Small n means wide uncertainty, treat thin tiers as hints, not verdicts.</p></div>
+Floor changes are ETH-denominated collections only. "Today" rows use the latest snapshot;
+trailing-change rows unlock once snapshot history is deep enough (7d, 30d). A collection
+with no live floor counts as dead for this read. Small n means wide uncertainty, treat
+thin tiers as hints, not verdicts.</p></div>
 """
 
 
@@ -720,6 +828,12 @@ def view_definitions():
          "Every individual sale — price, buyer, seller, timestamp, tx hash. "
          "The source of truth. Every detector, score, and chart derives from the tape, "
          "never from floor snapshots alone.",
+         None),
+        ("Tape depth",
+         "How many days of history we hold for a collection: first observed sale, "
+         "else first snapshot, else when it entered the tracker. This is how long "
+         "we've watched, not the project's true age. A short tape means "
+         "week-over-week reads are partial — direction, not verdict.",
          None),
         ("Floor",
          "The lowest currently listed price. A lagging snapshot: useful context, "
