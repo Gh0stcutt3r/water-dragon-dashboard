@@ -940,5 +940,125 @@
     "verified_name": "Organon",
     "chain": "robinhood",
     "total_supply": 1111
+  },
+  "ESC CAP": {
+    "slug": "esccaphq",
+    "verified_name": "ESC CAP",
+    "chain": "robinhood",
+    "total_supply": 3333
+  },
+  "ROBULL": {
+    "slug": "robull",
+    "verified_name": "ROBULL",
+    "chain": "robinhood",
+    "total_supply": 1000
+  },
+  "Crypto Cars GARAGE": {
+    "slug": "crypto-cars-garage",
+    "verified_name": "Crypto Cars GARAGE",
+    "chain": "robinhood",
+    "total_supply": 30
+  },
+  "Skull Bros": {
+    "slug": "skull-bros-official",
+    "verified_name": "Skull Bros",
+    "chain": "robinhood",
+    "total_supply": 809
+  },
+  "Abstract Workers2": {
+    "slug": "abstract-workers2",
+    "verified_name": "Abstract Workers2",
+    "chain": "robinhood",
+    "total_supply": 1111
+  },
+  "Starchoadz": {
+    "slug": "starchoadz-nft",
+    "verified_name": "Starchoadz",
+    "chain": "robinhood",
+    "total_supply": 832
+  },
+  "Don't Lose Your Hedz": {
+    "slug": "dont-lose-your-hedz",
+    "verified_name": "Don't Lose Your Hedz",
+    "chain": "robinhood",
+    "total_supply": 1000
+  },
+  "The Squad": {
+    "slug": "thesquad-nfts",
+    "verified_name": "The Squad",
+    "chain": "robinhood",
+    "total_supply": 136
+  },
+  "Authority Keys": {
+    "slug": "authority-key",
+    "verified_name": "Authority Keys",
+    "chain": "robinhood",
+    "total_supply": 589
+  },
+  "Yardkeepers": {
+    "slug": "yardkeepers",
+    "verified_name": "Yardkeepers",
+    "chain": "robinhood",
+    "total_supply": 3333
+  },
+  "Cash Grab": {
+    "slug": "cash-grab-rh",
+    "verified_name": "Cash Grab",
+    "chain": "robinhood",
+    "total_supply": 753
+  },
+  "XREIGN UNITS": {
+    "slug": "xreign-units",
+    "verified_name": "XREIGN UNITS",
+    "chain": "robinhood",
+    "total_supply": 5555
+  },
+  "Pixel Plebs Game": {
+    "slug": "pixel-plebs-game",
+    "verified_name": "Pixel Plebs Game",
+    "chain": "robinhood",
+    "total_supply": 900
+  },
+  "Zombie Robinhood Punks": {
+    "slug": "zombie-robinhood-punks",
+    "verified_name": "Zombie Robinhood Punks",
+    "chain": "robinhood",
+    "total_supply": 555
+  },
+  "thegloomycats": {
+    "slug": "thegloomycats",
+    "verified_name": "thegloomycats",
+    "chain": "robinhood",
+    "total_supply": 621
+  },
+  "0xBabyNut-V1": {
+    "slug": "0xbabynut-2",
+    "verified_name": "0xBabyNut-V1",
+    "chain": "robinhood",
+    "total_supply": 3200
+  },
+  "Farming Season": {
+    "slug": "farmingseason",
+    "verified_name": "Farming Season",
+    "chain": "robinhood",
+    "total_supply": 1111
+  },
+  "Ember Seed": {
+    "slug": "ember-seed",
+    "verified_name": "Ember Seed",
+    "chain": "robinhood",
+    "total_supply": 2000
+  },
+  "The 3333 Experiments": {
+    "slug": "the-3333-experiments",
+    "verified_name": "The 3333 Experiments",
+    "chain": "robinhood",
+    "total_supply": 2540
+  },
+  "holder tester-V1": {
+    "slug": "0xholderterter-2",
+    "verified_name": "holder tester-V1",
+    "chain": "robinhood",
+    "total_supply": 3200
   }
 }
