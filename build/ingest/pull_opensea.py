@@ -55,11 +55,13 @@ def api_get(path, params):
         return read_json(resp)
 
 
-def fetch_sales(slug, max_pages=20):
+def fetch_sales(slug, max_pages=20, after=None):
     """Paginate sale events. Returns list of normalized sale dicts."""
     out, cursor, pages = [], None, 0
     while pages < max_pages:
         params = {"event_type": "sale", "limit": 50}
+        if after:
+            params["after"] = after
         if cursor:
             params["next"] = cursor
         try:
@@ -101,16 +103,16 @@ def fetch_sales(slug, max_pages=20):
 def main():
     con = sqlite3.connect(DB)
     total = 0
-    # Prefer the current top-30 (refreshed daily); fall back to the seed map.
-    top30_path = os.path.expanduser(
-        "~/workspace/goals/launch-economics-data-tool/hidden_files/top30.json")
-    try:
-        top_slugs = json.load(open(top30_path))["windows"]["7d"]
-        slugs = {s: OS_SLUGS.get(s, (s, "robinhood", "")) for s in top_slugs}
-        print(f"universe: top-30 refresh ({len(slugs)} slugs)", flush=True)
-    except Exception as e:
-        print(f"universe: top30.json unreadable ({e}); using seed map", flush=True)
-        slugs = OS_SLUGS
+    # Universe: EVERY tracked collection, not just the current top-30.
+    # (2026-10-25 fix: the top-30-only pull froze the tape of any collection
+    # that rotated out of the window, and the Graveyard misread that coverage
+    # gap as death. SKNOTS had 858 OpenSea sales in 14 days while listed dead.)
+    slugs = {}
+    for slug, name in con.execute("SELECT slug, name FROM collections"):
+        slugs[slug] = (name, "robinhood", "")
+    for s, v in OS_SLUGS.items():
+        slugs.setdefault(s, v)
+    print(f"universe: {len(slugs)} tracked collections (full tape coverage)", flush=True)
     for slug, (name, chain, _) in slugs.items():
         row = con.execute("SELECT id FROM collections WHERE slug=?", (slug,)).fetchone()
         if row:
@@ -121,7 +123,21 @@ def main():
                 (slug, name, chain, "unknown"),
             )
             cid = cur.lastrowid
-        sales = fetch_sales(slug)
+        last = con.execute(
+            "SELECT MAX(timestamp) FROM sales WHERE collection_id=?", (cid,)).fetchone()[0]
+        after = None
+        if last:
+            try:
+                from datetime import timedelta
+                after = int((datetime.fromisoformat(last) - timedelta(days=2)).timestamp())
+            except Exception:
+                after = None
+        else:
+            # First pull for this collection: bound the history to 120 days
+            # so a long-history collection cannot stall the daily run. The
+            # Span column on the dashboard discloses the tape depth honestly.
+            after = int(datetime.now(timezone.utc).timestamp()) - 120 * 86400
+        sales = fetch_sales(slug, after=after)
         new = 0
         for s in sales:
             if not s["tx_hash"] or not s["buyer"]:

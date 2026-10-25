@@ -688,8 +688,10 @@ def view_graveyard(con):
     return f"""
 <div class="card"><h2>The Graveyard</h2>
 <p class="note">Most launches die. This is what that looks like on the tape: a collection
-counts as dead when our OpenSea tape has recorded <b>no sale in 14+ days</b>. Tape starts
-when a collection enters the tracker, and this is OpenSea only — quiet here does not prove
+counts as dead when our OpenSea tape has recorded <b>no sale in 14+ days</b>. Since
+Oct 25, 2026 the tape pull covers every tracked collection daily (it previously covered
+only the top-30, which froze the tape of anything that rotated out and made live
+collections look dead). This is OpenSea only — quiet here does not prove
 quiet everywhere. "Last known floor" is the floor at its most recent snapshot; a dead
 collection can keep a zombie listing long after trading stops.</p>
 <p class="note">Of <b>{total_with_tape}</b> tracked collections with any tape,
