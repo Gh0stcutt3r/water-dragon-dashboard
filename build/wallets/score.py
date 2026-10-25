@@ -27,6 +27,14 @@ def main():
     con = sqlite3.connect(DB)
     con.row_factory = sqlite3.Row
 
+    # migration: bot-flag columns (added 2026-10-25 at the user's request)
+    cols = {r[1] for r in con.execute("PRAGMA table_info(wallet_scores)")}
+    if "avg_pnl_per_dive" not in cols:
+        con.execute("ALTER TABLE wallet_scores ADD COLUMN avg_pnl_per_dive REAL")
+    if "flag" not in cols:
+        con.execute("ALTER TABLE wallet_scores ADD COLUMN flag TEXT")
+    con.commit()
+
     # collection launch proxy: first observed sale
     launch = {
         r["id"]: datetime.fromisoformat(r["t"])
@@ -76,16 +84,27 @@ def main():
             (f'%"seller": "{w}"%',),
         ).fetchone()[0]
         win_rate = round(dive_wins / dives, 3) if dives else None
+        realized = round(sell_total - buy_total, 6)
+        avg_per_dive = round(realized / dives, 6) if dives else None
+        # Bot-like pattern (user-approved rule, 2026-10-25): near-perfect dive
+        # record over real volume, skimming tiny margins — sniper/arbitrage
+        # behavior, not human flipping. Behavioral inference, not an identity.
+        flag = None
+        if (win_rate is not None and win_rate >= 0.9 and dives >= 10
+                and avg_per_dive is not None and avg_per_dive < 0.05):
+            flag = "bot-like"
 
         con.execute(
             """INSERT INTO wallet_scores(wallet, dives, dive_wins, win_rate,
-                                         realized_pnl_eth, dumps, updated_at)
-               VALUES(?,?,?,?,?,?,datetime('now'))
+                                         realized_pnl_eth, dumps, updated_at,
+                                         avg_pnl_per_dive, flag)
+               VALUES(?,?,?,?,?,?,datetime('now'),?,?)
                ON CONFLICT(wallet) DO UPDATE SET
                  dives=excluded.dives, dive_wins=excluded.dive_wins,
                  win_rate=excluded.win_rate, realized_pnl_eth=excluded.realized_pnl_eth,
-                 dumps=excluded.dumps, updated_at=datetime('now')""",
-            (w, dives, dive_wins, win_rate, round(sell_total - buy_total, 6), dumps),
+                 dumps=excluded.dumps, updated_at=datetime('now'),
+                 avg_pnl_per_dive=excluded.avg_pnl_per_dive, flag=excluded.flag""",
+            (w, dives, dive_wins, win_rate, realized, dumps, avg_per_dive, flag),
         )
     con.commit()
 
@@ -99,6 +118,11 @@ def main():
         print(f"{r['wallet'][:10]}…{r['wallet'][-4:]}  dives={r['dives']} "
               f"wins={r['dive_wins']} wr={r['win_rate']} pnl={r['realized_pnl_eth']} ETH "
               f"dumps={r['dumps']}")
+    print("=== bot-like flagged wallets ===")
+    flagged = con.execute(
+        "SELECT COUNT(*) FROM wallet_scores WHERE flag='bot-like'"
+    ).fetchone()[0]
+    print(f"{flagged} wallets match: win rate >= 90%, dives >= 10, avg PnL/dive < 0.05 ETH")
     print("=== most active dumpers ===")
     for r in con.execute(
         "SELECT wallet, dumps FROM wallet_scores WHERE dumps > 0 ORDER BY dumps DESC LIMIT 5"

@@ -27,8 +27,7 @@ Do this:
    - `python3 ~/workspace/goals/launch-economics-data-tool/build/wallets/score.py`
    - `python3 ~/workspace/goals/launch-economics-data-tool/build/reports/dashboard.py`
    Confirm each exits 0. The dashboard regenerates at `workspace/goals/launch-economics-data-tool/files/dragon-dashboard.html`.
-4. Run the wizard-family volume trigger: `python3 ~/workspace/goals/launch-economics-data-tool/build/detect/wizard_watch.py` (user-approved 2026-10-13, backs the Stacc hold recommendation's "revisit if volume returns" trigger). If it prints "WIZARD_WATCH: quiet", stay silent. If it reports activity, relay its output briefly to the main chat.
-5. Stay silent on success — this is background dataset accumulation, no chat report needed — except for a wizard_watch activity report from step 4.
-6. If any step fails or writes zero new rows, report the failure briefly to the main chat with the error output.
+4. Stay silent on success — this is background dataset accumulation, no chat report needed. (The wizard-family volume trigger was retired 2026-10-25 at the user's direction: no collection spotlights going forward. wizard_watch.py stays in the repo but is no longer run.)
+5. If any step fails or writes zero new rows, report the failure briefly to the main chat with the error output.
 
 Do not run analysis on a schedule; analysis happens on demand when the user asks.
