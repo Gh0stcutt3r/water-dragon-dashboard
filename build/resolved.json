@@ -1060,5 +1060,119 @@
     "verified_name": "holder tester-V1",
     "chain": "robinhood",
     "total_supply": 3200
+  },
+  "Vaultlings": {
+    "slug": "vaultlings",
+    "verified_name": "Vaultlings",
+    "chain": "robinhood",
+    "total_supply": 2087
+  },
+  "Thrill Karts": {
+    "slug": "thrill-karts",
+    "verified_name": "Thrill Karts",
+    "chain": "robinhood",
+    "total_supply": 1014
+  },
+  "Pharaoh God Mob": {
+    "slug": "pharaoh-god-mob",
+    "verified_name": "Pharaoh God Mob",
+    "chain": "robinhood",
+    "total_supply": 10000
+  },
+  "Floor Feeders": {
+    "slug": "floor-feeders",
+    "verified_name": "Floor Feeders",
+    "chain": "robinhood",
+    "total_supply": 2222
+  },
+  "BROODZ": {
+    "slug": "broodz",
+    "verified_name": "BROODZ",
+    "chain": "robinhood",
+    "total_supply": 888
+  },
+  "The Mutual Fun": {
+    "slug": "themutualfun",
+    "verified_name": "The Mutual Fun",
+    "chain": "robinhood",
+    "total_supply": 3790
+  },
+  "fuwa": {
+    "slug": "fuwacousin",
+    "verified_name": "fuwa",
+    "chain": "robinhood",
+    "total_supply": 5552
+  },
+  "Ribbit Reefers": {
+    "slug": "ribbitreefers",
+    "verified_name": "Ribbit Reefers",
+    "chain": "robinhood",
+    "total_supply": 1555
+  },
+  "Pink is Punks": {
+    "slug": "pink-is-punk",
+    "verified_name": "Pink is Punks",
+    "chain": "robinhood",
+    "total_supply": 797
+  },
+  "Digital humans": {
+    "slug": "digitalhumans",
+    "verified_name": "Digital humans",
+    "chain": "robinhood",
+    "total_supply": 5000
+  },
+  "Monkey Universe": {
+    "slug": "monkey-universe-rh",
+    "verified_name": "Monkey Universe",
+    "chain": "robinhood",
+    "total_supply": 973
+  },
+  "Scrap Society": {
+    "slug": "scrap-society",
+    "verified_name": "Scrap Society",
+    "chain": "robinhood",
+    "total_supply": 1000
+  },
+  "Stray Society": {
+    "slug": "stray-society",
+    "verified_name": "Stray Society",
+    "chain": "robinhood",
+    "total_supply": 605
+  },
+  "CCFF00 Cubes": {
+    "slug": "ccff00-cubes",
+    "verified_name": "CCFF00 Cubes",
+    "chain": "robinhood",
+    "total_supply": 1000
+  },
+  "CLAYPES": {
+    "slug": "claypesrh",
+    "verified_name": "CLAYPES",
+    "chain": "robinhood",
+    "total_supply": 1956
+  },
+  "Hood Crayons": {
+    "slug": "hood-crayons",
+    "verified_name": "Hood Crayons",
+    "chain": "robinhood",
+    "total_supply": 888
+  },
+  "PitBoys": {
+    "slug": "pitboys",
+    "verified_name": "PitBoys",
+    "chain": "robinhood",
+    "total_supply": 5361
+  },
+  "Block Titans": {
+    "slug": "block-titans",
+    "verified_name": "Block Titans",
+    "chain": "robinhood",
+    "total_supply": 2222
+  },
+  "Sloppies": {
+    "slug": "sloppies-424576658",
+    "verified_name": "Sloppies",
+    "chain": "robinhood",
+    "total_supply": 1111
   }
 }

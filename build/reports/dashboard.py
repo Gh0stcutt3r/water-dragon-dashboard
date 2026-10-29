@@ -516,6 +516,110 @@ Toggle the window:</p>
     return out
 
 
+def _ecosystems():
+    """Curated ecosystems config (build/ecosystems.json). Groupings are
+    confirmed by the user, never auto-derived; see view_ecosystems."""
+    try:
+        return json.load(open(os.path.join(BUILD, "ecosystems.json"))).get("ecosystems", [])
+    except Exception:
+        return []
+
+
+def _median(vals):
+    v = sorted(vals)
+    if not v:
+        return None
+    n = len(v)
+    return v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2
+
+
+def view_ecosystems(con):
+    """Ecosystems tab (replaced Collections 2026-10-28 at the user's
+    direction): collections grouped by the dev/artist behind them, with a
+    combined footprint per ecosystem. No raw detector feed here; the
+    per-collection drill-down lives in the tape, not on this page."""
+    from datetime import datetime as _dt, timezone as _tz
+    now = _dt.now(_tz.utc)
+    intro = """<div class="card"><h2><span class="grad-text">Ecosystems</span></h2>
+<p class="note">Collections grouped by the dev or artist behind them: one builder's whole
+footprint, every launch, how each one trades, and whether the ecosystem is still alive.
+Groupings are <b>curated and confirmed by Ghostcutter</b>. On-chain patterns may suggest a
+candidate, but nothing joins this tab until he has checked it out and confirmed it.
+Stats are our OpenSea tape only.</p></div>"""
+    ecos = _ecosystems()
+    if not ecos:
+        return intro + '<div class="card"><p class="note">No ecosystems confirmed yet.</p></div>'
+    out = intro
+    for eco in ecos:
+        members_html = ""
+        tot_n, tot_vol, active = 0, 0.0, 0
+        for m in eco.get("members", []):
+            slug = m["slug"]
+            r = con.execute("SELECT id, name FROM collections WHERE slug=?",
+                            (slug,)).fetchone()
+            disp = m.get("display") or (r["name"] if r else slug)
+            if not r:
+                members_html += (f"<div style='margin-top:18px'><h3>{disp}</h3>"
+                                 f"<p class='note'>not in the tracker yet</p></div>")
+                continue
+            cid = r["id"]
+            rows = con.execute(
+                "SELECT date(timestamp) d, price_eth FROM sales "
+                "WHERE collection_id=? AND price_eth IS NOT NULL ORDER BY timestamp",
+                (cid,)).fetchall()
+            n = con.execute("SELECT COUNT(*) c FROM sales WHERE collection_id=?",
+                            (cid,)).fetchone()["c"]
+            last = con.execute("SELECT MAX(timestamp) mx FROM sales WHERE collection_id=?",
+                               (cid,)).fetchone()["mx"]
+            prices = [x["price_eth"] for x in rows]
+            vol = sum(prices)
+            med = _median(prices)
+            daily = defaultdict(list)
+            for x in rows:
+                daily[x["d"]].append(x["price_eth"])
+            series = sorted((d, _median(v)) for d, v in daily.items())
+            quiet = None
+            if last:
+                try:
+                    quiet = (now - _dt.fromisoformat(last)).days
+                except Exception:
+                    quiet = None
+            if quiet is not None and quiet < 7:
+                active += 1
+            tot_n += n
+            tot_vol += vol
+            stats = (f"{n} sales · {vol:.3f} ETH volume · median sale {med:.4f} ETH"
+                     if med is not None else f"{n} sales")
+            last_str = ""
+            if last:
+                last_str = f" · last sale {last[:10]}"
+                if quiet is not None:
+                    last_str += f" ({quiet}d ago)"
+            depth = tape_depth_days(con, cid, slug)
+            depth_str = f" · tracked {depth}d" if depth is not None else ""
+            chart = (svg_line(series) if len(series) >= 2
+                     else '<p class="note">no priced tape yet</p>')
+            members_html += f"""
+<div style="margin-top:18px"><h3>{disp} <span class="note mono">{slug}{depth_str}</span></h3>
+<p class="note">{stats}{last_str}</p>
+{chart}
+</div>"""
+        handle_html = ""
+        if eco.get("x_url"):
+            handle_html = f" · <a href='{eco['x_url']}'>{eco.get('handle', '')}</a>"
+        elif eco.get("handle"):
+            handle_html = f" · {eco['handle']}"
+        note_html = f"<p class='note'>{eco['note']}</p>" if eco.get("note") else ""
+        out += f"""
+<div class="card" style="margin-top:24px">
+<h2><span class="grad-text">{eco.get('name', '')}</span>{handle_html}</h2>
+<p class="note">{eco.get('role', '')}</p>
+<p class="note"><b>{tot_n} sales</b> across {len(eco.get('members', []))} collections · <b>{tot_vol:.3f} ETH</b> total volume · <b>{active}</b> member(s) with a sale in the last 7 days</p>
+{note_html}{members_html}
+</div>"""
+    return out
+
+
 def view_wallets(con):
     rows = ""
     for r in con.execute(
@@ -607,7 +711,7 @@ def main():
 <div class="sub">v0.4 Part 2 · {n_sales} sales · {n_w} wallets · charting the hidden worlds of Robinhood NFTs · generated {stamp}</div>
 <div class="tabs">
 <button id="btn-regime" class="active" onclick="show('regime')">Regime</button>
-<button id="btn-collections" onclick="show('collections')">Collections</button>
+<button id="btn-ecosystems" onclick="show('ecosystems')">Ecosystems</button>
 <button id="btn-wallets" onclick="show('wallets')">Wallets</button>
 <button id="btn-timing" onclick="show('timing')">Mint timing</button>
 <button id="btn-intel" onclick="show('intel')">Graveyard</button>
@@ -615,10 +719,10 @@ def main():
 <button id="btn-defs" onclick="show('defs')">Definitions</button>
 </div>
 <div id="tab-regime" class="tab active">{view_regime(con)}</div>
-<div id="tab-collections" class="tab">{view_collections(con)}</div>
+<div id="tab-ecosystems" class="tab">{view_ecosystems(con)}</div>
 <div id="tab-wallets" class="tab">{view_wallets(con)}</div>
 <div id="tab-timing" class="tab">{view_timing(con)}</div>
-<div id="tab-intel" class="tab">{view_graveyard(con)}</div>
+<div id="tab-intel" class="tab">{view_graveyard(con)}{dragon_section(con, _window_rankings().get("7d", []))}</div>
 <div id="tab-launch" class="tab">{view_launch(con)}</div>
 <div id="tab-defs" class="tab">{view_definitions()}</div>
 <script>const TIER_DATA = {tier_data};</script>
