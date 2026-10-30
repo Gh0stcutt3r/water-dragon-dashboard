@@ -1174,5 +1174,47 @@
     "verified_name": "Sloppies",
     "chain": "robinhood",
     "total_supply": 1111
+  },
+  "FARMERS": {
+    "slug": "farmers-rh",
+    "verified_name": "FARMERS",
+    "chain": "robinhood",
+    "total_supply": 2222
+  },
+  "Street Monkeys": {
+    "slug": "street-monkeys",
+    "verified_name": "Street Monkeys",
+    "chain": "robinhood",
+    "total_supply": 1000
+  },
+  "Pixel Hood Penguins": {
+    "slug": "pixel-hood-penguins",
+    "verified_name": "Pixel Hood Penguins",
+    "chain": "robinhood",
+    "total_supply": 808
+  },
+  "Toys": {
+    "slug": "toysrh",
+    "verified_name": "Toys",
+    "chain": "robinhood",
+    "total_supply": 878
+  },
+  "Max Extractors": {
+    "slug": "maxextractors",
+    "verified_name": "Max Extractors",
+    "chain": "robinhood",
+    "total_supply": 1848
+  },
+  "Gotchi Shadows": {
+    "slug": "gotchishadows",
+    "verified_name": "Gotchi Shadows",
+    "chain": "robinhood",
+    "total_supply": 5084
+  },
+  "Ethernal Cubs": {
+    "slug": "ethernal-cubs-orbs",
+    "verified_name": "Ethernal Cubs",
+    "chain": "robinhood",
+    "total_supply": 2332
   }
 }

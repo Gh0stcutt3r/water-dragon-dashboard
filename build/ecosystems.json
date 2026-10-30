@@ -22,19 +22,20 @@
           "contract": "0x8ce30305e7f41792637119e6b120a27902d15296",
           "display": "Abstract Workers",
           "slug": "abstract-workers2"
+        },
+        {
+          "contract": "0xda4d595ecb0808013bd95aeb26947b076fe722ac",
+          "display": "The 33 Crowns (The Tower)",
+          "slug": "the-33-crowns-674675694"
         }
       ],
       "name": "BrookeGanster",
-      "note": "Her X bio names her as dev of Robin Rabbits and The 3333 Experiments. Lovebugs and Abstract Workers are grouped here by Ghostcutter (confirmed 2026-10-28).",
+      "note": "Her X bio names her as dev of Robin Rabbits and The 3333 Experiments. Lovebugs and Abstract Workers are grouped here by Ghostcutter (confirmed 2026-10-28). The 33 Crowns, which he calls The Tower, joined 2026-10-30: supply 33, its lore grows out of the Experiments' Specimen Jars.",
       "role": "Developer / multidisciplinary artist. Co-launched Abstract Workers with @vibesforreal1.",
       "x_url": "https://x.com/BrookeGanster"
     },
     {
-      "name": "Suited Ape Society",
       "handle": "@TheSuitedApes",
-      "x_url": "https://x.com/TheSuitedApes",
-      "role": "NFT project ecosystem. Founder known to Ghostcutter; developer not confirmed.",
-      "note": "Grouped by Ghostcutter on 2026-10-29 from the contracts he supplied. Connected X accounts: @TheSuitedApes and @BankFiOfficial. Three more additions are expected in November 2026; their names and contracts are still pending, so they are not counted in this footprint yet.",
       "members": [
         {
           "contract": "0xe638f58c87258ece6c0eddc46f70327663635c69",
@@ -46,14 +47,14 @@
           "display": "Vaultlings",
           "slug": "vaultlings"
         }
-      ]
+      ],
+      "name": "Suited Ape Society",
+      "note": "Grouped by Ghostcutter on 2026-10-29 from the contracts he supplied. Connected X accounts: @TheSuitedApes and @BankFiOfficial. Three more additions are expected in November 2026; their names and contracts are still pending, so they are not counted in this footprint yet.",
+      "role": "NFT project ecosystem. Founder known to Ghostcutter; developer not confirmed.",
+      "x_url": "https://x.com/TheSuitedApes"
     },
     {
-      "name": "_topcats",
       "handle": "@_topcats",
-      "x_url": "https://x.com/_topcats",
-      "role": "Artist, per Ghostcutter.",
-      "note": "Grouped by Ghostcutter on 2026-10-29 from the contracts he supplied; artist @_topcats. Neither collection was in the tracker before today: both were added and their OpenSea tape pulled on 2026-10-29 (first pull bounded to 120 days; Block Titans hit the 1,000-event first-pull cap, so its tape starts partway into that window).",
       "members": [
         {
           "contract": "0x9fcef949f33a03e1845c20c1dd21fcdd5d7db81a",
@@ -65,14 +66,14 @@
           "display": "Sloppies",
           "slug": "sloppies-424576658"
         }
-      ]
+      ],
+      "name": "_topcats",
+      "note": "Grouped by Ghostcutter on 2026-10-29 from the contracts he supplied; artist @_topcats. Neither collection was in the tracker before today: both were added and their OpenSea tape pulled on 2026-10-29 (first pull bounded to 120 days; Block Titans hit the 1,000-event first-pull cap, so its tape starts partway into that window).",
+      "role": "Artist, per Ghostcutter.",
+      "x_url": "https://x.com/_topcats"
     },
     {
-      "name": "RealCashpig",
       "handle": "@RealCashpig",
-      "x_url": "https://x.com/RealCashpig",
-      "role": "Creator of Cash Grab, SKNOTS, and CCFF00 Circle, per Ghostcutter.",
-      "note": "Grouped by Ghostcutter on 2026-10-29 from the contracts he supplied. For the record: RoaringPiggy clarified on 2026-10-06 that SKNOTS and CCFF00 Circles are Cash's separate projects, not official CCFF00 or HoodStreet releases. CCFF00 Circle is still minting: 3,100 of its 10,000 max supply minted as of 2026-10-29.",
       "members": [
         {
           "contract": "0x66de4a428a3b890abee81968bcfdb385fe80d22d",
@@ -89,7 +90,11 @@
           "display": "CCFF00 Circle",
           "slug": "ccff00-circle"
         }
-      ]
+      ],
+      "name": "RealCashpig",
+      "note": "Grouped by Ghostcutter on 2026-10-29 from the contracts he supplied. For the record: RoaringPiggy clarified on 2026-10-06 that SKNOTS and CCFF00 Circles are Cash's separate projects, not official CCFF00 or HoodStreet releases. CCFF00 Circle is still minting: 3,100 of its 10,000 max supply minted as of 2026-10-29.",
+      "role": "Creator of Cash Grab, SKNOTS, and CCFF00 Circle, per Ghostcutter.",
+      "x_url": "https://x.com/RealCashpig"
     }
   ]
 }

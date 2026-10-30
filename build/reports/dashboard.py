@@ -4,7 +4,8 @@
 Reads tracker.db, writes files/launch-econ-dashboard.html — a self-contained
 HTML file (inline SVG charts, no CDN, works offline). Regenerated daily by cron.
 
-Views: Regime | Collections | Wallets | Mint timing
+Views: Regime | Ecosystems | Wallets | Graveyard | Launch | Definitions
+(Mint Timing tab retired 2026-10-29; its cohort table moved into Launch.)
 """
 import os
 import json
@@ -667,7 +668,7 @@ human flipping; discount them when reading this board.</p>
 """
 
 
-def view_timing(con):
+def view_cohorts(con):
     rows = ""
     for cohort, n_coll, n_sales in con.execute(
         """SELECT c.cohort, COUNT(DISTINCT c.id), COUNT(s.id)
@@ -681,20 +682,13 @@ def view_timing(con):
 <tbody>{rows}</tbody></table>
 <p class="note" style="margin-top:10px"><b>mint-comps</b> = free-mint comparables for your
 launch (Cartoonals Classics, City of Stonks). <b>broad</b> = everything else, feeds wallet
-intel and regime reads.</p></div>
-<div class="card"><h2>Mint-timing briefing</h2>
-<p><span class="grad-text">Regime:</span> broad-cohort medians are down across most
-collections — the Robinhood NFT market is cooling, not heating. No urgency from market
-momentum; the space between launches is quiet right now.</p>
-<p><span class="grad-text">What actually matters for your date:</span> the Bugz mint and
-its aftermath (partner collections expected to dump), plus holiday dead zones
-(late December). Day-of-week effects are unreliable at current data depth.</p>
-<p class="note"><b>Honest gaps:</b> mint-comps has no tape yet — Cartoonals Classics and
-City of Stonks trade off Hood Market and off OpenSea. Their history must come from their
-actual venues or Blockscout transfers. Hood Market timestamps are approximate
-(relative labels). Wash flags are investigative, never accusations.</p></div>
+intel and regime reads.</p>
+<p class="note"><b>Honest gap:</b> mint-comps has no tape in this dashboard. Cartoonals
+Classics and City of Stonks trade off OpenSea, so their history must come from their
+actual venues, not from these pulls. (This card lived on the Mint Timing tab until
+2026-10-29, when that tab was retired: its briefing was frozen prose, and its only
+live content was this table.)</p></div>
 """
-
 
 def main():
     con = sqlite3.connect(DB)
@@ -713,7 +707,6 @@ def main():
 <button id="btn-regime" class="active" onclick="show('regime')">Regime</button>
 <button id="btn-ecosystems" onclick="show('ecosystems')">Ecosystems</button>
 <button id="btn-wallets" onclick="show('wallets')">Wallets</button>
-<button id="btn-timing" onclick="show('timing')">Mint timing</button>
 <button id="btn-intel" onclick="show('intel')">Graveyard</button>
 <button id="btn-launch" onclick="show('launch')">Launch</button>
 <button id="btn-defs" onclick="show('defs')">Definitions</button>
@@ -721,7 +714,6 @@ def main():
 <div id="tab-regime" class="tab active">{view_regime(con)}</div>
 <div id="tab-ecosystems" class="tab">{view_ecosystems(con)}</div>
 <div id="tab-wallets" class="tab">{view_wallets(con)}</div>
-<div id="tab-timing" class="tab">{view_timing(con)}</div>
 <div id="tab-intel" class="tab">{view_graveyard(con)}{dragon_section(con, _window_rankings().get("7d", []))}</div>
 <div id="tab-launch" class="tab">{view_launch(con)}</div>
 <div id="tab-defs" class="tab">{view_definitions()}</div>
@@ -1076,7 +1068,7 @@ fewer than 3 live floors lists the actual floors instead of a median, and says s
 changes are ETH-denominated collections only, measured against each collection's own
 latest snapshot. A collection with no live floor counts as dead for this read. Small n
 means wide uncertainty: treat thin tiers as hints, not verdicts.</p></div>
-""" + launch_outcomes_html(con)
+""" + launch_outcomes_html(con) + view_cohorts(con)
 
 
 def view_definitions():
